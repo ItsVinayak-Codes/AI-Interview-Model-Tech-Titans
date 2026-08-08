@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Sun, Moon, LogOut, Settings, X, Terminal, CheckCircle2, ShieldCheck, Radio, Brain, Activity, BarChart3 } from 'lucide-react';
+import { Sun, Moon, LogOut, Settings, X, Menu, Terminal, CheckCircle2, ShieldCheck, Radio, Brain, Activity, BarChart3 } from 'lucide-react';
 
 import rawCandidatesData from './data/candidates.json';
+import './App.css';
 
 import Navbar from './components/Navbar';
 import CandidateForm from './components/CandidateForm';
@@ -36,6 +37,7 @@ export default function App() {
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const [sessionId] = useState(() => 'sess-' + Math.random().toString(36).substring(2, 9));
   const formRef = useRef(null);
@@ -62,6 +64,7 @@ export default function App() {
   // EXACT FASTAPI BACKEND CALLS 
   const handleStartInterview = async (candidateObj) => {
     stopAISpeech();
+    setIsSidebarOpen(false);
     setHistory([]); setIsDone(false); setFinalFeedback(null); setCoveredDays(new Set()); setIsLoading(true);
     setActiveTab('interview'); setViewMode('dashboard');
 
@@ -130,6 +133,7 @@ export default function App() {
     setSelectedCandidate(candidateObj);
     setViewMode('dashboard');
     setActiveTab('home'); // Go to Dashboard Home instead of auto-starting
+    setIsSidebarOpen(false);
   };
 
   const handleEndInterview = async () => {
@@ -148,6 +152,7 @@ export default function App() {
     setIsDone(true);
     setToastMessage('Interview ended — generating final evaluation...');
     setActiveTab('feedback');
+    setIsSidebarOpen(false);
     // clear toast shortly after
     setTimeout(() => setToastMessage(null), 3800);
 
@@ -178,7 +183,7 @@ export default function App() {
     }
   };
   return (
-    <div className={`min-h-screen font-mono select-none transition-colors duration-300 ${theme === 'dark' ? 'bg-[#070A13] text-slate-200' : 'bg-slate-50 text-slate-800'}`}>
+    <div className={`min-h-screen overflow-x-hidden font-mono select-none transition-colors duration-300 ${theme === 'dark' ? 'bg-[#070A13] text-slate-200' : 'bg-slate-50 text-slate-800'}`}>
       {/* Toast */}
       {toastMessage && (
         <div className="fixed top-4 right-4 z-50">
@@ -201,27 +206,28 @@ export default function App() {
             {/* HERO SECTION */}
             <section className="max-w-7xl mx-auto px-6 lg:px-10 pt-20 pb-16 lg:pt-28">
               <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-14 items-center">
-                <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#00F0FF]/30 bg-[#00F0FF]/5 text-[#00F0FF] font-mono text-[9px] uppercase tracking-[0.18em] mb-7">
+                <div className="reveal-up">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#00F0FF]/30 bg-[#00F0FF]/5 text-[#00F0FF] font-mono text-[9px] uppercase tracking-[0.18em] mb-7 badge-glow" style={{ animationDelay: '0.05s' }}>
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> FASTAPI EVALUATION ENGINE ONLINE
                   </div>
                   <h1 className={`text-5xl sm:text-6xl lg:text-7xl font-black tracking-[-0.04em] leading-[0.95] ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                    GO BEYOND <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#00F0FF] via-[#38BDF8] to-[#A855F7] drop-shadow-[0_0_30px_rgba(0,240,255,0.25)]">THE RESUME.</span>
-                    <span className={`block mt-2 ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>MEASURE ENGINEERING.</span>
+                    <span className="hero-line block" style={{ animationDelay: '0.12s' }}>GO BEYOND</span>
+                    <span className="hero-line block text-transparent bg-clip-text bg-gradient-to-r from-[#00F0FF] via-[#38BDF8] to-[#A855F7] drop-shadow-[0_0_30px_rgba(0,240,255,0.25)]" style={{ animationDelay: '0.22s' }}>THE RESUME.</span>
+                    <span className={`hero-line block mt-2 ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`} style={{ animationDelay: '0.32s' }}>MEASURE ENGINEERING.</span>
                   </h1>
-                  <p className="mt-7 max-w-2xl text-sm lg:text-base leading-7 text-slate-400">Neural Interface is an AI-powered technical evaluation platform designed to assess how candidates actually think, build, debug, and architect.</p>
+                  <p className="reveal-up mt-7 max-w-2xl text-sm lg:text-base leading-7 text-slate-400" style={{ animationDelay: '0.4s' }}>Neural Interface is an AI-powered technical evaluation platform designed to assess how candidates actually think, build, debug, and architect.</p>
                   
                   <div className="flex flex-wrap gap-5 mt-9 text-[9px] font-mono uppercase tracking-widest">
-                    <div className="flex items-center gap-2 text-emerald-400"><CheckCircle2 className="w-3.5 h-3.5" /> Session Engine Ready</div>
-                    <div className="flex items-center gap-2 text-cyan-400"><ShieldCheck className="w-3.5 h-3.5" /> Evaluation Grounded</div>
-                    <div className="flex items-center gap-2 text-purple-400"><Radio className="w-3.5 h-3.5 animate-pulse" /> AI Agent Online</div>
+                    <div className="reveal-up flex items-center gap-2 text-emerald-400" style={{ animationDelay: '0.48s' }}><CheckCircle2 className="w-3.5 h-3.5" /> Session Engine Ready</div>
+                    <div className="reveal-up flex items-center gap-2 text-cyan-400" style={{ animationDelay: '0.56s' }}><ShieldCheck className="w-3.5 h-3.5" /> Evaluation Grounded</div>
+                    <div className="reveal-up flex items-center gap-2 text-purple-400" style={{ animationDelay: '0.64s' }}><Radio className="w-3.5 h-3.5 animate-pulse" /> AI Agent Online</div>
                   </div>
                 </div>
 
                 {/* TERMINAL PREVIEW */}
-                <div className="relative">
+                <div className="relative reveal-up" style={{ animationDelay: '0.18s' }}>
                   <div className="absolute -inset-5 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 blur-3xl" />
-                  <div className={`relative border rounded-2xl overflow-hidden shadow-2xl ${theme === 'dark' ? 'bg-[#0A0E1A] border-[#1E293B]' : 'bg-white border-slate-200'}`}>
+                  <div className={`relative border rounded-2xl overflow-hidden shadow-2xl terminal-card ${theme === 'dark' ? 'bg-[#0A0E1A] border-[#1E293B]' : 'bg-white border-slate-200'}`}>
                     <div className={`px-5 py-4 border-b flex items-center justify-between ${theme === 'dark' ? 'bg-[#0D1322] border-[#1E293B]' : 'bg-slate-100 border-slate-200'}`}>
                       <div className="flex items-center gap-2"><Terminal className="w-4 h-4 text-[#00F0FF]" /><span className="text-[10px] font-mono font-bold tracking-widest text-slate-300">EVALUATION_ENGINE</span></div>
                       <div className="flex items-center gap-2 text-[9px] font-mono text-emerald-400"><span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />LIVE</div>
@@ -239,14 +245,14 @@ export default function App() {
             </section>
 
             {/* METHODOLOGY SECTION */}
-            <section id="methodology" className="max-w-7xl mx-auto px-6 lg:px-10 py-16">
+            <section id="methodology" className="max-w-7xl mx-auto px-6 lg:px-10 py-16 reveal-up" style={{ animationDelay: '0.12s' }}>
               <div className="grid md:grid-cols-3 gap-5">
                 {[
                   { icon: Brain, number: '01', title: 'Adaptive Interviewing', text: 'Questions evolve according to the candidate profile and technical depth.' },
                   { icon: Activity, number: '02', title: 'Signal Extraction', text: 'Focuses on architecture, reasoning, implementation choices, and system thinking.' },
                   { icon: BarChart3, number: '03', title: 'Actionable Scorecard', text: 'Receive structured strengths, gaps, technical scores, and concrete next steps.' }
                 ].map(({ icon: Icon, number, title, text }) => (
-                  <div key={number} className={`group border rounded-xl p-6 transition-all ${theme === 'dark' ? 'bg-[#0A0E1A] border-[#1E293B] hover:border-[#00F0FF]/50' : 'bg-white border-slate-200 hover:border-cyan-500'}`}>
+                  <div key={number} className={`group border rounded-xl p-6 transition-all card-rise ${theme === 'dark' ? 'bg-[#0A0E1A] border-[#1E293B] hover:border-[#00F0FF]/50' : 'bg-white border-slate-200 hover:border-cyan-500'}`} style={{ animationDelay: `${0.14 + (Number(number) - 1) * 0.08}s` }}>
                     <div className="flex justify-between items-start mb-8">
                       <div className={`w-11 h-11 rounded-lg border flex items-center justify-center ${theme === 'dark' ? 'bg-[#0D1322] border-[#1E293B]' : 'bg-cyan-50 border-cyan-200'}`}><Icon className="w-5 h-5 text-[#00F0FF]" /></div>
                       <span className="text-[10px] font-mono text-slate-500">{number}</span>
@@ -258,7 +264,9 @@ export default function App() {
               </div>
             </section>
 
-            <CandidateForm theme={theme} candidatesList={candidatesList} candidateForm={candidateForm} setCandidateForm={setCandidateForm} onSelectPreset={(c) => setCandidateForm({ name: c.member.name, id: c.member.id, jobRole: c.member.jobRole })} onSubmit={handleOnboardingSubmit} formRef={formRef} />
+            <div className="reveal-up" style={{ animationDelay: '0.18s' }}>
+              <CandidateForm theme={theme} candidatesList={candidatesList} candidateForm={candidateForm} setCandidateForm={setCandidateForm} onSelectPreset={(c) => setCandidateForm({ name: c.member.name, id: c.member.id, jobRole: c.member.jobRole })} onSubmit={handleOnboardingSubmit} formRef={formRef} />
+            </div>
           </main>
         </div>
       )}
@@ -266,12 +274,31 @@ export default function App() {
       {/* DASHBOARD */}
       {viewMode === 'dashboard' && (
         <div className="flex h-screen w-full overflow-hidden">
-          <Sidebar theme={theme} activeTab={activeTab} setActiveTab={setActiveTab} setIsSettingsOpen={setIsSettingsOpen} setIsLogoutModalOpen={setIsLogoutModalOpen} />
+          {isSidebarOpen && (
+            <div className="fixed inset-0 z-30 bg-[#070A13]/70 backdrop-blur-sm lg:hidden" onClick={() => setIsSidebarOpen(false)} />
+          )}
+
+          <Sidebar
+            theme={theme}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            setIsSettingsOpen={setIsSettingsOpen}
+            setIsLogoutModalOpen={setIsLogoutModalOpen}
+            isMobileOpen={isSidebarOpen}
+            onClose={() => setIsSidebarOpen(false)}
+          />
           
           <main className={`flex-1 flex flex-col min-w-0 relative overflow-hidden ${theme === 'dark' ? 'bg-[#070A13]' : 'bg-slate-50'}`}>
-            <header className={`h-16 border-b px-8 flex items-center justify-between z-10 ${theme === 'dark' ? 'border-[#1E293B] bg-[#0A0E1A]/80' : 'border-slate-200 bg-white/80'}`}>
-              <h2 className={`text-xl font-black uppercase ${theme === 'dark' ? 'text-[#00F0FF]' : 'text-cyan-700'}`}>MISSION CONTROL <span className="text-xs font-mono text-slate-500">[{selectedCandidate.member.name}]</span></h2>
-              <button onClick={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')} className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-xs font-mono font-bold transition-all ${theme === 'dark' ? 'bg-[#0D1322] border-[#1E293B] text-amber-400' : 'bg-slate-100 border-slate-300 text-slate-700'}`}>
+            <header className={`border-b px-4 sm:px-8 py-3 flex flex-col gap-3 sm:h-16 sm:flex-row sm:items-center sm:justify-between z-10 ${theme === 'dark' ? 'border-[#1E293B] bg-[#0A0E1A]/80' : 'border-slate-200 bg-white/80'}`}>
+              <div className="flex items-center justify-between gap-3 w-full sm:w-auto">
+                <button onClick={() => setIsSidebarOpen(true)} className={`lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg border ${theme === 'dark' ? 'bg-[#0D1322] border-[#1E293B] text-[#00F0FF]' : 'bg-slate-100 border-slate-300 text-cyan-700'}`}>
+                  <Menu className="w-5 h-5" />
+                </button>
+                <h2 className={`text-sm sm:text-xl font-black uppercase leading-tight ${theme === 'dark' ? 'text-[#00F0FF]' : 'text-cyan-700'}`}>
+                  MISSION CONTROL <span className="block sm:inline text-[10px] sm:text-xs font-mono text-slate-500">[{selectedCandidate.member.name}]</span>
+                </h2>
+              </div>
+              <button onClick={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')} className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg border text-xs font-mono font-bold transition-all self-start sm:self-auto ${theme === 'dark' ? 'bg-[#0D1322] border-[#1E293B] text-amber-400' : 'bg-slate-100 border-slate-300 text-slate-700'}`}>
                 {theme === 'dark' ? <><Sun className="w-4 h-4 text-amber-400" /><span>LIGHT THEME</span></> : <><Moon className="w-4 h-4 text-indigo-600" /><span>DARK THEME</span></>}
               </button>
             </header>

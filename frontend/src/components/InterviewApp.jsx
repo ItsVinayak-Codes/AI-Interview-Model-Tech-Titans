@@ -8,14 +8,14 @@ export default function InterviewAppComponent({
   const isInterviewStarted = history.length > 0 || isLoading;
 
   return (
-    <div className="flex-1 flex overflow-hidden z-10">
+    <div className="flex-1 flex flex-col lg:flex-row overflow-hidden z-10">
       <div className="flex-1 flex flex-col min-w-0 border-r border-[#1E293B]">
-        <div className={`p-3 border-b flex items-center justify-between text-xs px-6 ${theme === 'dark' ? 'bg-[#0A0E1A] border-[#1E293B]' : 'bg-white border-slate-200'}`}>
-          <div className="flex items-center gap-6">
-            <div><span className="text-slate-400 uppercase">Candidate: </span><span className="font-bold text-[#00F0FF]">{selectedCandidate.member.name}</span></div>
+        <div className={`p-3 border-b flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-xs px-4 sm:px-6 ${theme === 'dark' ? 'bg-[#0A0E1A] border-[#1E293B]' : 'bg-white border-slate-200'}`}>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
+            <div><span className="text-slate-400 uppercase">Candidate: </span><span className="font-bold text-[#00F0FF] break-words">{selectedCandidate.member.name}</span></div>
             <div><span className="text-slate-400 uppercase">Questions: </span><span className="font-bold text-amber-400">{history.filter(h => h.role === 'model').length} / 8+</span></div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <button onClick={() => setVoiceEnabled(!voiceEnabled)} className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-mono transition-all ${voiceEnabled ? 'bg-[#00F0FF] text-[#070A13] font-bold' : 'bg-[#0D1322] border border-[#1E293B] text-slate-400'}`}>
               {voiceEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />} <span>VOICE MODE</span>
             </button>
@@ -31,9 +31,9 @@ export default function InterviewAppComponent({
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 sm:space-y-6">
           {!isInterviewStarted ? (
-            <div className="h-full flex flex-col items-center justify-center text-center p-8">
+              <div className="h-full flex flex-col items-center justify-center text-center p-6 sm:p-8">
               <Brain className="w-12 h-12 text-[#00F0FF] animate-pulse mb-4" />
               <h3 className={`text-lg font-black uppercase tracking-wider mb-2 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>NEURAL TERMINAL READY</h3>
               <p className="text-xs text-slate-400 max-w-md mb-6">Deploying AI Lead Interviewer for candidate <span className="text-[#00F0FF]">{selectedCandidate.member.name}</span>.</p>
@@ -44,9 +44,9 @@ export default function InterviewAppComponent({
           ) : (
             <>
               {history.map((msg, idx) => (
-                <div key={idx} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div key={idx} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   {msg.role === 'model' && <div className="w-8 h-8 rounded bg-[#111827] border border-[#00F0FF] flex items-center justify-center text-[#00F0FF] shrink-0 mt-1"><Brain className="w-4 h-4" /></div>}
-                  <div className={`max-w-[80%] rounded p-4 text-xs leading-relaxed ${msg.role === 'user' ? 'bg-[#131C2E] border border-purple-500/40 text-purple-200' : theme === 'dark' ? 'bg-[#0A0E1A] border border-[#1E293B] text-slate-200' : 'bg-slate-100 text-slate-800'}`}>
+                  <div className={`max-w-[88%] sm:max-w-[80%] rounded p-4 text-xs leading-relaxed ${msg.role === 'user' ? 'bg-[#131C2E] border border-purple-500/40 text-purple-200' : theme === 'dark' ? 'bg-[#0A0E1A] border border-[#1E293B] text-slate-200' : 'bg-slate-100 text-slate-800'}`}>
                     {msg.role === 'model' && (
                       <div className="flex items-center justify-between mb-2 pb-1 border-b border-[#1E293B] text-[10px] text-[#00F0FF] font-mono">
                         <span>INTERVIEWER TURN #{msg.questionNum || Math.floor(idx/2)+1}</span>
@@ -68,7 +68,7 @@ export default function InterviewAppComponent({
           )}
         </div>
 
-        <form onSubmit={handleSendMessage} className={`p-4 border-t ${theme === 'dark' ? 'border-[#1E293B] bg-[#0A0E1A]' : 'border-slate-200 bg-white'}`}>
+        <form onSubmit={handleSendMessage} className={`p-3 sm:p-4 border-t ${theme === 'dark' ? 'border-[#1E293B] bg-[#0A0E1A]' : 'border-slate-200 bg-white'}`}>
           <div className="relative flex items-center">
             <input type="text" placeholder="ENTER_CANDIDATE_RESPONSE..." disabled={!isInterviewStarted || isLoading || isDone} value={inputText} onChange={(e) => setInputText(e.target.value)}
               className={`w-full border rounded py-3.5 pl-4 pr-12 text-xs font-mono focus:outline-none focus:border-[#00F0FF] ${theme === 'dark' ? 'bg-[#060912] border-[#1E293B] text-slate-200' : 'bg-slate-50 border-slate-300 text-slate-800'}`} />
@@ -79,7 +79,7 @@ export default function InterviewAppComponent({
         </form>
       </div>
 
-      <div className={`w-80 border-l p-6 space-y-6 overflow-y-auto ${theme === 'dark' ? 'bg-[#0A0E1A]/60 border-[#1E293B]' : 'bg-slate-50 border-slate-200'}`}>
+      <div className={`w-full lg:w-80 border-l p-4 sm:p-6 space-y-5 sm:space-y-6 overflow-y-auto ${theme === 'dark' ? 'bg-[#0A0E1A]/60 border-[#1E293B]' : 'bg-slate-50 border-slate-200'}`}>
         <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2"><Activity className="w-4 h-4 text-[#00F0FF]" /><span>NEURAL TRACKER</span></h3>
         <div className={`border rounded p-4 space-y-3 ${theme === 'dark' ? 'bg-[#060912] border-[#1E293B]' : 'bg-white border-slate-200'}`}>
           <div className="flex justify-between items-center text-xs">

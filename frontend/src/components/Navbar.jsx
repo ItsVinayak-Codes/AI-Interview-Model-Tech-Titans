@@ -6,8 +6,10 @@ export default function Navbar({ theme, setTheme, onLoginClick }) {
     <header className={`sticky top-0 z-40 border-b backdrop-blur-xl transition-colors duration-300 ${
       theme === 'dark' ? 'border-[#1E293B] bg-[#070A13]/90' : 'border-slate-200 bg-white/90'
     }`}>
-      <div className="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-3 sm:py-0 min-h-16 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        
+        {/* LOGO & BRANDING */}
+        <div className="flex items-center gap-3 min-w-0">
           <div className="relative">
             <div className={`w-10 h-10 rounded-xl border flex items-center justify-center shadow-lg ${
               theme === 'dark' ? 'bg-[#0D1322] border-[#00F0FF]/60 shadow-[0_0_20px_rgba(0,240,255,0.18)]' : 'bg-cyan-50 border-cyan-500 shadow-sm'
@@ -16,8 +18,8 @@ export default function Navbar({ theme, setTheme, onLoginClick }) {
             </div>
             <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#070A13] animate-pulse" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
               <span className={`font-black tracking-[0.22em] text-sm ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                 NEURAL INTERFACE
               </span>
@@ -31,14 +33,8 @@ export default function Navbar({ theme, setTheme, onLoginClick }) {
           </div>
         </div>
 
-        <div className={`hidden lg:flex items-center gap-8 text-[10px] font-mono uppercase tracking-widest ${
-          theme === 'dark' ? 'text-slate-400' : 'text-slate-600'
-        }`}>
-          <button onClick={() => document.getElementById('platform')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-[#00F0FF] transition-colors">Platform</button>
-          <button onClick={() => document.getElementById('methodology')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-[#00F0FF] transition-colors">Methodology</button>
-        </div>
-
-        <div className="flex items-center gap-4">
+        {/* ACTION BUTTONS (Theme Toggle & Login) */}
+        <div className="flex items-center gap-3 sm:gap-4 self-end sm:self-auto">
           <button
             onClick={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono font-bold transition-all ${
@@ -47,13 +43,15 @@ export default function Navbar({ theme, setTheme, onLoginClick }) {
           >
             {theme === 'dark' ? <><Sun className="w-4 h-4 text-amber-400 animate-pulse" /><span className="hidden sm:inline">LIGHT</span></> : <><Moon className="w-4 h-4 text-indigo-600" /><span className="hidden sm:inline">DARK</span></>}
           </button>
+          
           <button
             onClick={onLoginClick}
-            className="px-4 py-2.5 bg-[#00F0FF] hover:bg-cyan-300 text-[#070A13] font-black text-[10px] uppercase tracking-widest rounded-lg shadow-[0_0_20px_rgba(0,240,255,0.35)] transition-all flex items-center gap-2"
+            className="px-3 sm:px-4 py-2.5 bg-[#00F0FF] hover:bg-cyan-300 text-[#070A13] font-black text-[10px] uppercase tracking-widest rounded-lg shadow-[0_0_20px_rgba(0,240,255,0.35)] transition-all flex items-center gap-2"
           >
-            Candidate Login <ChevronRight className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Candidate Login</span><span className="sm:hidden">Login</span> <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
+        
       </div>
     </header>
   );
