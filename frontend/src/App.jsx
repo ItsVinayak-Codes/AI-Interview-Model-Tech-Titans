@@ -18,6 +18,7 @@ const CANDIDATES_DATA = rawCandidatesData.candidates.map(c => ({
 }));
 
 export default function App() {
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   const [theme, setTheme] = useState('dark');
   const [viewMode, setViewMode] = useState('welcome');
   const [activeTab, setActiveTab] = useState('home');
@@ -69,7 +70,7 @@ export default function App() {
     setActiveTab('interview'); setViewMode('dashboard');
 
     try {
-      const response = await fetch('http://localhost:5000/api/interview', {
+      const response = await fetch(`${API_BASE_URL}/api/interview`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId: sessionId, candidate: candidateObj.rawProfile || candidateObj })
@@ -99,7 +100,7 @@ export default function App() {
     setHistory(updatedHistory); setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/interview', {
+      const response = await fetch(`${API_BASE_URL}/api/interview`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId: sessionId, message: userMsg })
       });
@@ -157,7 +158,7 @@ export default function App() {
     setTimeout(() => setToastMessage(null), 3800);
 
     try {
-      const response = await fetch('http://localhost:5000/api/interview', {
+      const response = await fetch(`${API_BASE_URL}/api/interview`, {
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId: sessionId, message: terminationMsg })
