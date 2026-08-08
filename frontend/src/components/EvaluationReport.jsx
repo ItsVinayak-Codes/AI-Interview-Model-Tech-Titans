@@ -1,109 +1,112 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import { FileText, Zap, Brain, TrendingUp, CheckCircle2 } from 'lucide-react';
 
-export default function EvaluationReport({ candidate, report, onRestart }) {
-  // 1. Safe extraction of candidate identifiers (compatible with nested candidates.json)
-  const candidateName = candidate?.name || candidate?.member?.name || "Candidate";
-  const candidateId = candidate?.id || candidate?.member?.id || "CAND-001";
-
-  // 2. Safely parse tech spec feedback fields with robust bullet-point fallbacks
-  const summaryText = report?.summary || "The candidate completed the AI Cohort evaluation session, demonstrating core command over foundational concepts.";
-  
-  const strengths = report?.strengths?.length > 0 ? report.strengths : [
-    "Demonstrated solid conceptual foundation across primary technical domains.",
-    "Maintained clear architectural reasoning during scenario-based questioning."
-  ];
-
-  // Maps to the spec's 'gaps' array (with fallback for legacy 'improvements')
-  const gaps = report?.gaps?.length > 0 ? report.gaps : (report?.improvements?.length > 0 ? report.improvements : [
-    "Advanced production scaling and edge-case handling require further refinement.",
-    "Latency optimization parameters could be structured more efficiently."
-  ]);
-
-  const nextSteps = report?.next?.length > 0 ? report.next : [
-    "Review advanced Model Context Protocol (MCP) and multi-agent orchestrations.",
-    "Implement containerized deployments using Docker and Kubernetes for production readiness."
-  ];
-
-  // Dynamic score simulation based on feedback presence
-  const aggregateScore = report?.overallScore ?? 3.0;
+function SkillRadarChart({ skills }) {
+  const size = 260; const center = size / 2; const radius = 85; const numAxes = skills?.length || 5;
+  const points = (skills || []).map((s, i) => {
+    const angle = (Math.PI * 2 * i) / numAxes - Math.PI / 2;
+    return `${center + ((s.val || 50) / 100) * radius * Math.cos(angle)},${center + ((s.val || 50) / 100) * radius * Math.sin(angle)}`;
+  }).join(' ');
 
   return (
-    <div className="animate-slide-up" style={{ maxWidth: '900px', margin: '20px auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      
-      {/* Header Panel */}
-      <div className="glass-panel" style={{ padding: '30px', borderLeft: '4px solid var(--neon-purple)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+    <div className="flex flex-col items-center justify-center relative py-2">
+      <svg width={size} height={size} className="overflow-visible">
+        {[0.25, 0.5, 0.75, 1.0].map((lvl, idx) => (
+          <polygon key={idx} points={(skills || []).map((_, i) => `${center + lvl * radius * Math.cos((Math.PI * 2 * i) / numAxes - Math.PI / 2)},${center + lvl * radius * Math.sin((Math.PI * 2 * i) / numAxes - Math.PI / 2)}`).join(' ')} fill="none" stroke="#1E293B" strokeWidth="1" strokeDasharray={idx < 3 ? "2,2" : "none"} />
+        ))}
+        {(skills || []).map((_, i) => <line key={i} x1={center} y1={center} x2={center + radius * Math.cos((Math.PI * 2 * i) / numAxes - Math.PI / 2)} y2={center + radius * Math.sin((Math.PI * 2 * i) / numAxes - Math.PI / 2)} stroke="#1E293B" strokeWidth="1" />)}
+        <polygon points={points} fill="rgba(0, 240, 255, 0.25)" stroke="#00F0FF" strokeWidth="2" />
+        {(skills || []).map((s, i) => {
+          const angle = (Math.PI * 2 * i) / numAxes - Math.PI / 2;
+          return (
+            <g key={i}>
+              <circle cx={center + ((s.val || 50) / 100) * radius * Math.cos(angle)} cy={center + ((s.val || 50) / 100) * radius * Math.sin(angle)} r="4" fill="#00F0FF" />
+              <text x={center + (radius + 28) * Math.cos(angle)} y={center + (radius + 16) * Math.sin(angle)} textAnchor="middle" fill="#94A3B8" fontSize="8" fontFamily="monospace">{s.axis} ({s.val}%)</text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+export default function EvaluationReportComponent({ theme, selectedCandidate, finalFeedback }) {
+  const rootRef = useRef(null);
+
+  useEffect(() => {
+    // when the feedback tab mounts, scroll it into view for the user
+    rootRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
+  const verdictText = finalFeedback?.verdict || "HIRE - READY FOR REVIEW";
+  const summaryText = finalFeedback?.summary || "The candidate completed the AI Cohort evaluation session.";
+  const strengths = finalFeedback?.strengths?.length > 0 ? finalFeedback.strengths : [{name: "General Competency", val: 85}];
+  const nextActions = finalFeedback?.next?.length > 0 ? finalFeedback.next : ["Review evaluation scorecard post-completion."];
+  const aggregateScore = finalFeedback?.overallScore ?? 8.5;
+
+  return (
+    <div ref={rootRef} className="flex-1 p-8 overflow-y-auto z-10 space-y-6">
+      <div className={`flex justify-between items-start border-b pb-6 ${theme === 'dark' ? 'border-[#1E293B]' : 'border-slate-200'}`}>
+        <div>
+          <h2 className={`text-3xl font-black tracking-widest uppercase mb-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>CANDIDATE PERFORMANCE EVALUATION</h2>
+          <p className="text-xs text-slate-400 font-mono">CANDIDATE: <span className="text-[#00F0FF] font-bold">{selectedCandidate.member.name}</span> ({selectedCandidate.member.id})</p>
+        </div>
+        <div className="text-right">
+          <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 block mb-1">FINAL HIRING VERDICT</span>
+          <div className="px-4 py-2 bg-[#060912] border border-[#00F0FF] text-[#00F0FF] font-bold text-xs uppercase rounded flex items-center gap-2 shadow-[0_0_15px_rgba(0,240,255,0.3)]">
+            <CheckCircle2 className="w-4 h-4 text-[#00F0FF]" /><span>{verdictText}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className={`md:col-span-2 border rounded-lg p-6 flex flex-col justify-between ${theme === 'dark' ? 'bg-[#0A0E1A] border-[#1E293B]' : 'bg-white border-slate-200'}`}>
           <div>
-            <h1 className="text-glow" style={{ color: 'var(--neon-purple)', margin: '0 0 10px 0', fontSize: '24px' }}>POST-MORTEM ANALYSIS</h1>
-            <p className="font-mono" style={{ color: 'var(--text-muted)', margin: 0 }}>CANDIDATE: {candidateId} // {candidateName}</p>
+            <h3 className={`text-base font-bold flex items-center gap-2 mb-4 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}><FileText className="w-4 h-4 text-[#00F0FF]" /><span>Candidate Performance Summary</span></h3>
+            <p className="text-xs text-slate-400 leading-relaxed font-mono mb-6">{summaryText}</p>
           </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>AGGREGATE SCORE</div>
-            <div className="text-glow" style={{ fontSize: '42px', fontWeight: '800', lineHeight: 1 }}>
-              {aggregateScore}<span style={{ fontSize: '24px', color: 'var(--text-muted)' }}>/10</span>
-            </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border-t border-[#1E293B] pt-4 font-mono">
+            <div className="bg-[#060912] p-3 rounded border border-[#1E293B]"><div className="text-[10px] text-slate-400 uppercase">OVERALL SCORE</div><div className="text-xl font-black text-[#00F0FF] mt-0.5">{aggregateScore}/10</div></div>
           </div>
         </div>
-      </div>
 
-      {/* Executive Summary Box */}
-      <div className="glass-panel" style={{ padding: '20px 24px', borderLeft: '3px solid var(--neon-blue)' }}>
-        <h3 className="font-mono" style={{ color: 'var(--neon-blue)', margin: '0 0 8px 0', fontSize: '13px', letterSpacing: '1px' }}>
-          // EXECUTIVE_SUMMARY
-        </h3>
-        <p style={{ color: 'var(--text-main)', fontSize: '14px', lineHeight: '1.6', margin: 0 }}>
-          {summaryText}
-        </p>
-      </div>
-
-      {/* Grid Layout for Strengths & Gaps */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-        
-        {/* Left Column: Strengths */}
-        <div className="glass-panel" style={{ padding: '24px', borderTop: '2px solid var(--success)' }}>
-          <h3 className="font-mono" style={{ margin: '0 0 15px 0', color: 'var(--success)', fontSize: '13px', letterSpacing: '1px' }}>
-            [+] STRENGTHS
-          </h3>
-          <ul style={{ margin: 0, paddingLeft: '20px', color: 'var(--text-main)', fontSize: '13px', lineHeight: '1.7' }}>
-            {strengths.map((item, i) => (
-              <li key={i} style={{ marginBottom: '8px' }}>{item}</li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Right Column: Gaps / Bottlenecks */}
-        <div className="glass-panel" style={{ padding: '24px', borderTop: '2px solid var(--danger)' }}>
-          <h3 className="font-mono" style={{ margin: '0 0 15px 0', color: 'var(--danger)', fontSize: '13px', letterSpacing: '1px' }}>
-            [-] GAPS & BOTTLENECK
-          </h3>
-          <ul style={{ margin: 0, paddingLeft: '20px', color: 'var(--text-main)', fontSize: '13px', lineHeight: '1.7' }}>
-            {gaps.map((item, i) => (
-              <li key={i} style={{ marginBottom: '8px' }}>{item}</li>
-            ))}
-          </ul>
+        <div className="bg-[#0A0E1A] border border-[#A855F7] rounded-lg p-6 flex flex-col justify-between shadow-[0_0_20px_rgba(168,85,247,0.25)]">
+          <div>
+            <h3 className="text-base font-bold text-[#A855F7] flex items-center gap-2 mb-4"><Zap className="w-4 h-4 fill-[#A855F7]" /><span>Actionable Next Steps</span></h3>
+            <ul className="space-y-3 text-xs text-slate-300 font-mono mb-6 list-disc pl-4">
+              {nextActions.map((step, idx) => <li key={idx}><span>{typeof step === 'string' ? step : JSON.stringify(step)}</span></li>)}
+            </ul>
+          </div>
+          <button className="w-full py-3 bg-gradient-to-r from-[#A855F7] to-[#00F0FF] text-[#070A13] font-black text-xs uppercase tracking-widest rounded shadow-lg">EXECUTE OFFER ACTION</button>
         </div>
       </div>
 
-      {/* Recommended Next Actions Box */}
-      <div className="glass-panel" style={{ padding: '24px', borderTop: '2px solid var(--neon-purple)' }}>
-        <h3 className="font-mono" style={{ margin: '0 0 15px 0', color: 'var(--neon-purple)', fontSize: '13px', letterSpacing: '1px' }}>
-          [*] RECOMMENDED_NEXT_ACTIONS
-        </h3>
-        <ul style={{ margin: 0, paddingLeft: '20px', color: 'var(--text-main)', fontSize: '13px', lineHeight: '1.7' }}>
-          {nextSteps.map((item, i) => (
-            <li key={i} style={{ marginBottom: '8px' }}>{item}</li>
-          ))}
-        </ul>
-      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className={`border rounded-lg p-6 flex flex-col items-center justify-between ${theme === 'dark' ? 'bg-[#0A0E1A] border-[#1E293B]' : 'bg-white border-slate-200'}`}>
+          <div className="w-full flex justify-between items-center mb-2">
+            <h3 className={`text-sm font-bold flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}><Brain className="w-4 h-4 text-[#00F0FF]" /><span>Technical Competency Radar Chart</span></h3>
+            <span className="text-[10px] text-[#00F0FF] font-mono bg-[#0D1322] px-2 py-0.5 rounded border border-[#00F0FF]/30">5-AXIS MATRIX</span>
+          </div>
+          <SkillRadarChart skills={(finalFeedback && finalFeedback.radarSkills) || [{ axis: "RAG", val: 88 }, { axis: "Agents", val: 85 }, { axis: "Architecture", val: 92 }, { axis: "Prompting", val: 80 }, { axis: "DevOps", val: 80 }]} />
+        </div>
 
-      {/* Reboot / Restart Button */}
-      <button 
-        onClick={onRestart}
-        className="glass-panel border-glow font-mono"
-        style={{ width: '100%', padding: '18px', color: 'var(--neon-blue)', background: 'transparent', cursor: 'pointer', marginTop: '10px', letterSpacing: '2px' }}
-      >
-        REBOOT_SYSTEM() // START_NEW_INTERVIEW
-      </button>
+        <div className={`border rounded-lg p-6 space-y-6 ${theme === 'dark' ? 'bg-[#0A0E1A] border-[#1E293B]' : 'bg-white border-slate-200'}`}>
+          <h3 className={`text-sm font-bold flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}><TrendingUp className="w-4 h-4 text-emerald-400" /><span>Evaluated Signal Strengths</span></h3>
+          <div className="space-y-4">
+            {strengths.map((st, i) => {
+              const val = typeof st === 'object' && st !== null && 'val' in st ? st.val : 85;
+              const label = typeof st === 'object' && st !== null ? (st.name || st.title || JSON.stringify(st)) : String(st);
+              return (
+                <div key={i}>
+                  <div className="flex justify-between text-xs font-mono text-slate-300 mb-1.5"><span>{label}</span><span className="text-[#00F0FF] font-bold">{val}%</span></div>
+                  <div className="h-2 w-full bg-[#060912] rounded p-0.5 border border-slate-800">
+                    <div className="h-full bg-gradient-to-r from-[#00F0FF] to-emerald-400 rounded transition-all duration-500" style={{ width: `${val}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

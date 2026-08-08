@@ -1,91 +1,33 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
+@import "tailwindcss";
 
-:root {
-  --bg-dark: #07090f;
-  --surface: #111827;
-  --border: #1f2937;
-  --neon-blue: #00f0ff;
-  --neon-purple: #8a2be2;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --success: #10b981;
-  --danger: #ef4444;
+/* Optional scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #1E293B;
+  border-radius: 4px;
 }
 
-body {
-  margin: 0;
-  background-color: var(--bg-dark);
-  color: var(--text-main);
-  font-family: 'Inter', sans-serif;
-  background-image: 
-    radial-gradient(circle at 15% 50%, rgba(0, 240, 255, 0.05), transparent 25%),
-    radial-gradient(circle at 85% 30%, rgba(138, 43, 226, 0.05), transparent 25%);
-}
-/* Add this right below your body { ... } tag in index.css */
-
-.cyber-grid {
-  position: fixed;
-  top: 0; left: 0; width: 100vw; height: 100vh;
-  background-image: 
-    linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
-  background-size: 30px 30px;
-  z-index: -1;
-  pointer-events: none;
+/* Optional: Add a custom scrollbar to match the terminal vibe */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-/* Blinking terminal cursor for AI thinking */
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-.cursor-blink {
-  display: inline-block;
-  width: 8px; height: 16px;
-  background-color: var(--neon-blue);
-  animation: blink 1s step-end infinite;
-  margin-left: 4px;
-  vertical-align: text-bottom;
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-/* Typography & Glows */
-h1, h2, h3 { font-weight: 800; letter-spacing: -0.05em; }
-.font-mono { font-family: 'JetBrains Mono', monospace; }
-
-.text-glow {
-  color: var(--neon-blue);
-  text-shadow: 0 0 10px rgba(0, 240, 255, 0.6), 0 0 20px rgba(0, 240, 255, 0.2);
-}
-.border-glow {
-  border: 1px solid rgba(0, 240, 255, 0.3);
-  box-shadow: 0 0 15px rgba(0, 240, 255, 0.1) inset;
-}
-.border-glow:hover, .border-glow:focus-within {
-  border-color: var(--neon-blue);
-  box-shadow: 0 0 20px rgba(0, 240, 255, 0.2) inset, 0 0 10px rgba(0, 240, 255, 0.4);
+::-webkit-scrollbar-thumb {
+  background: #1E293B;
+  border-radius: 4px;
 }
 
-/* Glass Panels */
-.glass-panel {
-  background: rgba(17, 24, 39, 0.7);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  transition: all 0.3s ease;
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
 }
-
-/* Animations */
-.animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
-.animate-slide-up { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Custom Scrollbar for Chat */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--bg-dark); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: var(--neon-blue); }

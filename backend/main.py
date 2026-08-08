@@ -87,47 +87,58 @@ async def handle_interview(payload: InterviewRequest):
     is_complete = question_turns >= 8 or "terminate" in user_msg.lower() or "choose to terminate" in user_msg.lower()
     
     if is_complete:
-            summary_prompt = f"""
-            Analyze this interview transcript for candidate {candidate_data.get('member', {}).get('name')}. 
-            Evaluate the depth, correctness, and engagement of the candidate's answers. 
-            If the candidate gave minimal responses, skipped questions, or terminated early, reflect that with a low overallScore (e.g., between 2.0 and 4.0) and highlight severe gaps in the gaps array.
-            
-            You must output valid JSON containing *only* these exact top-level keys:
-            - "overallScore": a float between 1.0 and 10.0.
-            - "summary": a string summarizing performance (mention if it was incomplete or poor).
-            - "strengths": an array of strings (or note minimal engagement if none).
-            - "gaps": an array of strings (actionable bottlenecks/drawbacks).
-            - "next": an array of strings.
-            
-            Transcript: {json.dumps(history)}
-            """
-            eval_response = llm.invoke([HumanMessage(content=summary_prompt)])
-            
-            raw_text = eval_response.content.replace("```json", "").replace("```", "").strip()
-            try:
-                feedback_data = json.loads(raw_text)
-            except:
-                feedback_data = {
-                    "overallScore": 3.0,
-                    "summary": "The interview was terminated early or lacked sufficient technical responses.",
-                    "strengths": ["None demonstrated due to lack of engagement."],
-                    "gaps": ["Failed to provide substantive answers to technical inquiries.", "Session abandoned prematurely."],
-                    "next": ["Restart the evaluation portal and complete all technical modules."]
-                }
-                
-            return {
-                "reply": "Interview completed.",
-                "done": True,
-                "feedback": feedback_data
-            }
+        summary_prompt = f"""
+        Analyze this interview transcript for candidate {candidate_data.get('member', {}).get('name')}. 
+        Evaluate the depth, correctness, and engagement of the candidate's answers. 
+        If the candidate gave minimal responses, skipped questions, or terminated early, reflect that with a low overallScore (e.g., between 2.0 and 4.0) and highlight severe gaps in the gaps array.
         
-    # Generate next technical question using LangChain & Mistral
+        You must output valid JSON containing *only* these exact top-level keys:
+        - "overallScore": a float between 1.0 and 10.0.
+        - "summary": a string summarizing performance (mention if it was incomplete or poor).
+        - "strengths": an array of strings (or note minimal engagement if none).
+        - "gaps": an array of strings (actionable bottlenecks/drawbacks).
+        - "next": an array of strings.
+        
+        Transcript: {json.dumps(history)}
+        """
+        eval_response = llm.invoke([HumanMessage(content=summary_prompt)])
+        
+        raw_text = eval_response.content.replace("```json", "").replace("```", "").strip()
+        try:
+            feedback_data = json.loads(raw_text)
+        except:
+            feedback_data = {
+                "overallScore": 3.0,
+                "summary": "The interview was terminated early or lacked sufficient technical responses.",
+                "strengths": ["None demonstrated due to lack of engagement."],
+                "gaps": ["Failed to provide substantive answers to technical inquiries.", "Session abandoned prematurely."],
+                "next": ["Restart the evaluation portal and complete all technical modules."]
+            }
+            
+        return {
+            "reply": "Interview completed.",
+            "done": True,
+            "feedback": feedback_data
+        }
+        
+    # Generate next technical question using LangChain & Mistral with Progressive Pacing
     curriculum_details = [d for d in curriculum_data.get("days", []) if d["day"] in completed_days]
     
+    # Dynamic question style mapping based on turn count
+    if question_turns <= 2:
+        phase_instruction = "Phase 1: Ask short, direct, and foundational technical questions to warm up the candidate."
+    elif question_turns <= 5:
+        phase_instruction = "Phase 2: Ask deep, scenario-based architecture or troubleshooting questions to test real-world problem solving."
+    else:
+        phase_instruction = "Phase 3: Ask mid-level conceptual wrap-up questions to test final system design and integration trade-offs."
+
     system_instruction = f"""
     You are an expert technical interviewer for an AI Cohort. 
     The candidate's completed curriculum milestones: {json.dumps(curriculum_details)}
-    Ask rigorous, scenario-based technical questions. Keep responses conversational and focused. Do not repeat previous questions.
+    
+    Current Interview Pacing: {phase_instruction}
+    
+    Keep responses conversational, focused, and ask only one question at a time. Do not repeat previous questions.
     """
     
     messages = [SystemMessage(content=system_instruction)]
