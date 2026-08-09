@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { FileText, Zap, TrendingUp, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { FileText, Zap, TrendingUp, AlertCircle, Loader2 } from 'lucide-react';
 
 export default function EvaluationReportComponent({ theme, selectedCandidate, finalFeedback }) {
   const rootRef = useRef(null);
@@ -13,7 +13,6 @@ export default function EvaluationReportComponent({ theme, selectedCandidate, fi
   const isGenerating = !finalFeedback || finalFeedback.overallScore === undefined;
 
   // Parse exact backend schema (fallback to placeholders if loading)
-  const verdictText = finalFeedback?.verdict || "ANALYZING...";
   const summaryText = finalFeedback?.summary || "Compiling evaluation metrics...";
   const strengths = finalFeedback?.strengths?.length > 0 ? finalFeedback.strengths : ["Processing signals..."];
   const gaps = finalFeedback?.gaps?.length > 0 ? finalFeedback.gaps : ["Processing signals..."];
@@ -40,7 +39,8 @@ export default function EvaluationReportComponent({ theme, selectedCandidate, fi
       {/* MAIN CONTENT - Dims slightly when loading overlay is active */}
       <div className={`space-y-6 transition-opacity duration-700 ${isGenerating ? 'opacity-30 pointer-events-none' : 'opacity-100'}`}>
         
-        <div className={`flex flex-col gap-4 md:flex-row md:justify-between md:items-start border-b pb-6 ${theme === 'dark' ? 'border-[#1E293B]' : 'border-slate-200'}`}>
+        {/* HEADER SECTION (Verdict section removed completely) */}
+        <div className={`border-b pb-6 ${theme === 'dark' ? 'border-[#1E293B]' : 'border-slate-200'}`}>
           <div className="min-w-0">
             <h2 className={`text-2xl sm:text-3xl font-black tracking-widest uppercase mb-1 break-words ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
               CANDIDATE PERFORMANCE EVALUATION
@@ -48,17 +48,6 @@ export default function EvaluationReportComponent({ theme, selectedCandidate, fi
             <p className="text-xs text-slate-400 font-mono break-words">
               CANDIDATE: <span className="text-[#00F0FF] font-bold">{selectedCandidate.member.name}</span> ({selectedCandidate.member.id})
             </p>
-          </div>
-          <div className="text-left md:text-right">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 block mb-1">FINAL HIRING VERDICT</span>
-            <div className={`px-4 py-2 border font-bold text-xs uppercase rounded flex items-center gap-2 ${
-              isGenerating 
-                ? 'bg-slate-800 border-slate-600 text-slate-400' 
-                : 'bg-[#060912] border-[#00F0FF] text-[#00F0FF] shadow-[0_0_15px_rgba(0,240,255,0.3)]'
-            }`}>
-              {!isGenerating && <CheckCircle2 className="w-4 h-4 text-[#00F0FF]" />}
-              <span>{verdictText}</span>
-            </div>
           </div>
         </div>
 
