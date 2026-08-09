@@ -9,9 +9,11 @@ export default function InterviewAppComponent({
 
   return (
     <div className="flex-1 flex flex-col lg:flex-row overflow-hidden z-10">
-      <div className="flex-1 flex flex-col min-w-0 border-r border-[#1E293B] relative">
+      
+      {/* MAIN CHAT AREA */}
+      <div className="flex-1 flex flex-col min-w-0 border-r border-[#1E293B] relative overflow-hidden">
         
-        {/* STICKY HEADER: Pinned to the top so 'End Interview' is always visible */}
+        {/* STICKY HEADER */}
         <div className={`sticky top-0 z-20 p-3 border-b flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-xs px-4 sm:px-6 backdrop-blur-md ${
           theme === 'dark' ? 'bg-[#0A0E1A]/90 border-[#1E293B]' : 'bg-white/90 border-slate-200'
         }`}>
@@ -34,6 +36,7 @@ export default function InterviewAppComponent({
           </div>
         </div>
 
+        {/* CHAT MESSAGES CONTAINER */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 sm:space-y-6">
           {!isInterviewStarted ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-6 sm:p-8">
@@ -71,9 +74,24 @@ export default function InterviewAppComponent({
           )}
         </div>
 
+        {/* INPUT FIELD / MOBILE PROMPT FIX: If interview is done, show a prominent mobile banner right above input area */}
+        {isDone && (
+          <div className="lg:hidden p-3 bg-purple-950/80 border-t border-purple-500/50 flex flex-col gap-2">
+            <div className="flex items-center gap-2 text-[#00F0FF] font-bold text-xs uppercase">
+              <Award className="w-4 h-4" /><span>REPORT READY</span>
+            </div>
+            <button 
+              onClick={() => setActiveTab('feedback')} 
+              className="w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded uppercase tracking-wider shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+            >
+              VIEW FULL EVALUATION
+            </button>
+          </div>
+        )}
+
         <form onSubmit={handleSendMessage} className={`p-3 sm:p-4 border-t ${theme === 'dark' ? 'border-[#1E293B] bg-[#0A0E1A]' : 'border-slate-200 bg-white'}`}>
           <div className="relative flex items-center">
-            <input type="text" placeholder="ENTER_CANDIDATE_RESPONSE..." disabled={!isInterviewStarted || isLoading || isDone} value={inputText} onChange={(e) => setInputText(e.target.value)}
+            <input type="text" placeholder={isDone ? "INTERVIEW COMPLETED" : "ENTER_CANDIDATE_RESPONSE..."} disabled={!isInterviewStarted || isLoading || isDone} value={inputText} onChange={(e) => setInputText(e.target.value)}
               className={`w-full border rounded py-3.5 pl-4 pr-12 text-xs font-mono focus:outline-none focus:border-[#00F0FF] ${theme === 'dark' ? 'bg-[#060912] border-[#1E293B] text-slate-200' : 'bg-slate-50 border-slate-300 text-slate-800'}`} />
             <button type="submit" disabled={!inputText.trim() || isLoading || isDone} className="absolute right-2 p-2 bg-[#00F0FF] text-[#070A13] hover:bg-[#38bdf8] disabled:opacity-40 rounded transition-all">
               <Send className="w-4 h-4" />
@@ -82,7 +100,8 @@ export default function InterviewAppComponent({
         </form>
       </div>
 
-      <div className={`w-full lg:w-80 border-l p-4 sm:p-6 space-y-5 sm:space-y-6 overflow-y-auto ${theme === 'dark' ? 'bg-[#0A0E1A]/60 border-[#1E293B]' : 'bg-slate-50 border-slate-200'}`}>
+      {/* SIDEBAR / DESKTOP & MOBILE WRAPPER */}
+      <div className={`w-full lg:w-80 border-t lg:border-t-0 lg:border-l p-4 sm:p-6 space-y-5 sm:space-y-6 overflow-y-auto ${theme === 'dark' ? 'bg-[#0A0E1A]/60 border-[#1E293B]' : 'bg-slate-50 border-slate-200'}`}>
         <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2"><Activity className="w-4 h-4 text-[#00F0FF]" /><span>NEURAL TRACKER</span></h3>
         <div className={`border rounded p-4 space-y-3 ${theme === 'dark' ? 'bg-[#060912] border-[#1E293B]' : 'bg-white border-slate-200'}`}>
           <div className="flex justify-between items-center text-xs">
@@ -93,11 +112,13 @@ export default function InterviewAppComponent({
             {coveredDays.size === 0 && <span className="text-[10px] text-slate-500">No coverage logged yet</span>}
           </div>
         </div>
+        
+        {/* DESKTOP REPORT READY CARD */}
         {isDone && (
-          <div className="bg-gradient-to-b from-purple-950/40 to-[#0A0E1A] border border-purple-500/50 rounded p-4 space-y-3">
+          <div className="hidden lg:block bg-gradient-to-b from-purple-950/40 to-[#0A0E1A] border border-purple-500/50 rounded p-4 space-y-3">
             <div className="flex items-center gap-2 text-[#00F0FF] font-bold text-xs uppercase"><Award className="w-4 h-4" /><span>REPORT READY</span></div>
             <p className="text-xs text-slate-300 italic">"Session successfully concluded."</p>
-            <button onClick={() => setActiveTab('feedback')} className="w-full py-2 bg-purple-600 text-white font-bold text-xs rounded uppercase tracking-wider">VIEW FULL EVALUATION</button>
+            <button onClick={() => setActiveTab('feedback')} className="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded uppercase tracking-wider transition-all">VIEW FULL EVALUATION</button>
           </div>
         )}
       </div>
