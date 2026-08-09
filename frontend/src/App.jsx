@@ -169,7 +169,7 @@ export default function App() {
 
       setIsLoading(false);
 
-      const aiClosureMessage = "The user has ended the interview. Processing your technical signals and generating your final evaluation result now...";
+      const aiClosureMessage = "Interview ended. Here is your final evaluation result.";
 
       setHistory(prev => [...prev, { role: 'model', content: aiClosureMessage, day: data.dayCovered }]);
       speakText(aiClosureMessage);
