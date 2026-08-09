@@ -87,71 +87,76 @@ async def handle_interview(payload: InterviewRequest):
     is_complete = question_turns >= 8 or "terminate" in user_msg.lower() or "choose to terminate" in user_msg.lower()
     
     if is_complete:
-        # 1. Format the transcript into a readable dialogue for the AI
-        formatted_transcript = ""
-        for msg in history:
-            role = "Interviewer" if msg["sender"] == "agent" else "Candidate"
-            formatted_transcript += f"{role}: {msg['text']}\n\n"
-
-        # 2. Use a highly specific grading prompt
         summary_prompt = f"""
-        You are an expert Senior Technical Evaluator. Analyze the following interview transcript for {candidate_data.get('member', {}).get('name')}.
+        Analyze this interview transcript for candidate {candidate_data.get('member', {}).get('name')}. 
+        Evaluate the depth, correctness, and engagement of the candidate's answers. 
+        If the candidate gave minimal responses, skipped questions, or terminated early, reflect that with a low overallScore (e.g., between 2.0 and 4.0) and highlight severe gaps in the gaps array.
         
-        Grading Criteria:
-        - Analyze technical accuracy, depth of architectural reasoning, and problem-solving.
-        - Penalize generic, shallow, or evasive answers (Score: 2.0 - 5.0).
-        - Reward detailed, accurate, and context-aware technical answers (Score: 7.0 - 10.0).
-        - If the candidate terminated early without answering questions, score them a 2.0.
+        You must output valid JSON containing *only* these exact top-level keys:
+        - "overallScore": a float between 1.0 and 10.0.
+        - "summary": a string summarizing performance (mention if it was incomplete or poor).
+        - "strengths": an array of strings (or note minimal engagement if none).
+        - "gaps": an array of strings (actionable bottlenecks/drawbacks).
+        - "next": an array of strings.
         
-        Transcript:
-        {formatted_transcript}
-        
-        CRITICAL INSTRUCTION: You MUST output ONLY valid JSON. Do not include markdown formatting (like ```json), and do not include any introductory or concluding text. Your entire response must be parseable by Python's json.loads().
-        
-        Required JSON Schema:
-        {{
-            "verdict": "string (e.g., 'HIRE', 'NO HIRE', 'NEEDS REVIEW')",
-            "overallScore": float (out of 10.0),
-            "summary": "string (Detailed executive summary of their technical performance)",
-            "strengths": ["string", "string"],
-            "gaps": ["string", "string"],
-            "next": ["string", "string"]
-        }}
+        Transcript: {json.dumps(history)}
         """
-        
         eval_response = llm.invoke([HumanMessage(content=summary_prompt)])
         
-        # 3. Aggressively clean the AI's output to ensure JSON parsing succeeds
-        raw_text = eval_response.content.strip()
-        if raw_text.startswith("```json"):
-            raw_text = raw_text[7:]
-        if raw_text.startswith("```"):
-            raw_text = raw_text[3:]
-        if raw_text.endswith("```"):
-            raw_text = raw_text[:-3]
-        raw_text = raw_text.strip()
-        
+        raw_text = eval_response.content.replace("```json", "").replace("```", "").strip()
         try:
             feedback_data = json.loads(raw_text)
-        except json.JSONDecodeError as e:
-            # If it STILL fails, print the error to your terminal so you can see what Mistral actually said
-            print(f"JSON Parsing Error: {e}")
-            print(f"Mistral Output was: {raw_text}")
-            
+        except:
             feedback_data = {
-                "verdict": "SYSTEM ERROR",
-                "overallScore": 0.0,
-                "summary": "The AI provided an evaluation, but it could not be formatted correctly. Please check server logs.",
-                "strengths": ["Data unavailable"],
-                "gaps": ["Data unavailable"],
-                "next": ["Check FastAPI terminal for Mistral output."]
+                "overallScore": 3.0,
+                "summary": "The interview was terminated early or lacked sufficient technical responses.",
+                "strengths": ["None demonstrated due to lack of engagement."],
+                "gaps": ["Failed to provide substantive answers to technical inquiries.", "Session abandoned prematurely."],
+                "next": ["Restart the evaluation portal and complete all technical modules."]
             }
             
         return {
-            "reply": "Interview completed. Generating final metrics...",
+            "reply": "Interview completed.",
             "done": True,
             "feedback": feedback_data
         }
+        
+    # Generate next technical question using LangChain & Mistral with Progressive Pacing
+    curriculum_details = [d for d in curriculum_data.get("days", []) if d["day"] in completed_days]
+    
+    # Dynamic question style mapping based on turn count
+    if question_turns <= 2:
+        phase_instruction = "Phase 1: Ask short, direct, and foundational technical questions to warm up the candidate."
+    elif question_turns <= 5:
+        phase_instruction = "Phase 2: Ask deep, scenario-based architecture or troubleshooting questions to test real-world problem solving."
+    else:
+        phase_instruction = "Phase 3: Ask mid-level conceptual wrap-up questions to test final system design and integration trade-offs."
+
+    system_instruction = f"""
+    You are an expert technical interviewer for an AI Cohort. 
+    The candidate's completed curriculum milestones: {json.dumps(curriculum_details)}
+    
+    Current Interview Pacing: {phase_instruction}
+    
+    Keep responses conversational, focused, and ask only one question at a time. Do not repeat previous questions.
+    """
+    
+    messages = [SystemMessage(content=system_instruction)]
+    for msg in history:
+        if msg["sender"] == "agent":
+            messages.append(AIMessage(content=msg["text"]))
+        else:
+            messages.append(HumanMessage(content=msg["text"]))
+            
+    ai_response = llm.invoke(messages)
+    agent_reply = ai_response.content
+    
+    history.append({"sender": "agent", "text": agent_reply})
+    
+    return {
+        "reply": agent_reply,
+        "done": False
+    }
 
 if __name__ == "__main__":
     import uvicorn
