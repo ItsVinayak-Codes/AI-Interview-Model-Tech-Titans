@@ -9,8 +9,12 @@ export default function InterviewAppComponent({
 
   return (
     <div className="flex-1 flex flex-col lg:flex-row overflow-hidden z-10">
-      <div className="flex-1 flex flex-col min-w-0 border-r border-[#1E293B]">
-        <div className={`p-3 border-b flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-xs px-4 sm:px-6 ${theme === 'dark' ? 'bg-[#0A0E1A] border-[#1E293B]' : 'bg-white border-slate-200'}`}>
+      <div className="flex-1 flex flex-col min-w-0 border-r border-[#1E293B] relative">
+        
+        {/* STICKY HEADER: Pinned to the top so 'End Interview' is always visible */}
+        <div className={`sticky top-0 z-20 p-3 border-b flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-xs px-4 sm:px-6 backdrop-blur-md ${
+          theme === 'dark' ? 'bg-[#0A0E1A]/90 border-[#1E293B]' : 'bg-white/90 border-slate-200'
+        }`}>
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
             <div><span className="text-slate-400 uppercase">Candidate: </span><span className="font-bold text-[#00F0FF] break-words">{selectedCandidate.member.name}</span></div>
             <div><span className="text-slate-400 uppercase">Questions: </span><span className="font-bold text-amber-400">{history.filter(h => h.role === 'model').length} / 8+</span></div>
@@ -20,7 +24,6 @@ export default function InterviewAppComponent({
               {voiceEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />} <span>VOICE MODE</span>
             </button>
             
-            {/* END INTERVIEW BUTTON REPLACING RESET TERMINAL */}
             <button 
               onClick={handleEndInterview} 
               disabled={!isInterviewStarted || isLoading || isDone}
@@ -33,7 +36,7 @@ export default function InterviewAppComponent({
 
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 sm:space-y-6">
           {!isInterviewStarted ? (
-              <div className="h-full flex flex-col items-center justify-center text-center p-6 sm:p-8">
+            <div className="h-full flex flex-col items-center justify-center text-center p-6 sm:p-8">
               <Brain className="w-12 h-12 text-[#00F0FF] animate-pulse mb-4" />
               <h3 className={`text-lg font-black uppercase tracking-wider mb-2 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>NEURAL TERMINAL READY</h3>
               <p className="text-xs text-slate-400 max-w-md mb-6">Deploying AI Lead Interviewer for candidate <span className="text-[#00F0FF]">{selectedCandidate.member.name}</span>.</p>
@@ -44,7 +47,7 @@ export default function InterviewAppComponent({
           ) : (
             <>
               {history.map((msg, idx) => (
-                  <div key={idx} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div key={idx} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   {msg.role === 'model' && <div className="w-8 h-8 rounded bg-[#111827] border border-[#00F0FF] flex items-center justify-center text-[#00F0FF] shrink-0 mt-1"><Brain className="w-4 h-4" /></div>}
                   <div className={`max-w-[88%] sm:max-w-[80%] rounded p-4 text-xs leading-relaxed ${msg.role === 'user' ? 'bg-[#131C2E] border border-purple-500/40 text-purple-200' : theme === 'dark' ? 'bg-[#0A0E1A] border border-[#1E293B] text-slate-200' : 'bg-slate-100 text-slate-800'}`}>
                     {msg.role === 'model' && (
